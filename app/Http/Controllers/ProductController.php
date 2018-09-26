@@ -47,7 +47,8 @@ class ProductController extends Controller
     {
       $product = Product::find($id);
 
-      return response()->json($product);
+      return response()->json($product)->header('Access-Control-Allow-Origin', '*')
+          ->header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
     }
 
     public function update(Request $request)
