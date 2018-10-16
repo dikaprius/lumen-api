@@ -19,7 +19,7 @@ $router->group(['prefix'=> 'api/v1'], function() use($router){
   $router->get('/products', 'ProductController@index');
   $router->post('/product', 'ProductController@create');
   $router->get('/product/{id}', 'ProductController@show');
-  $router->post('/product/update', 'ProductController@update');
+  $router->post('/product/update/{id}', 'ProductController@update');
   $router->post('/product/delete', 'ProductController@destroy');
 });
 $router->get('/api/login', 'UserController@login');
@@ -33,4 +33,13 @@ $router->group(['prefix' => 'api', 'middleware' =>'auth'], function() use($route
   $router->post('todo/update', 'TodoController@update');
   $router->delete('todo/{id}', 'TodoController@destroy');
 
+});
+
+$router->group(['prefix' => 'profile', 'middleware' =>'auth'], function() use($router){
+    $router->get('/{email}/student', 'UserController@profileByEmail');
+    $router->get('/students', 'UserController@getAllProfile');
+    $router->get('/me', 'UserController@myProfile');
+    $router->post('/changePassword','UserController@updatePassword');
+    $router->post('/changeImage', 'UserController@changeImage');
+    $router->post('/requestToken', 'UserController@requestToken');
 });

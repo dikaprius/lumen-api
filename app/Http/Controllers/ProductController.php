@@ -51,7 +51,7 @@ class ProductController extends Controller
           ->header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
     }
 
-    public function update(Request $request)
+    public function update(Request $request, $id)
     {
       $this->validate($request, [
         'name' => 'required|min:3',
@@ -61,13 +61,12 @@ class ProductController extends Controller
 
       $return = [];
       $returnNew = [];
-      $product = $request->id;
       $productName = $request->get('name');
       $productPrice = $request->get('price');
       $productDescription = $request->get('description');
 
       // find data with iD $product
-      $updateProduct = Product::find($product);
+      $updateProduct = Product::find($id);
 
       // if data not found then return empty data
       if (!$updateProduct){
