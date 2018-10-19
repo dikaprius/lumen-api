@@ -38,10 +38,10 @@ class Authenticate
     {
         $key = explode(' ',$request->header('Authorization'));
         if (!isset($key[1])){
-            return response()->json(['Error'=>'Wrong API Key'], 401);
+            return response()->json(['Error'=>'Unauthorized'], 401);
         }
         if ($this->auth->guard($guard)->guest()) {
-            return response()->json(['Error'=>'Unauthorized'], 401);
+            return response()->json(['Error'=>' Wrong API Key'], 401);
         }
         return $next($request);
     }

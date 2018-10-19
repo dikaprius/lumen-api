@@ -25,36 +25,36 @@ class UserController extends Controller
         //
     }
 
-    public function authenticate(Request $request)
-    {
-        $this->validate($request, [
-            'password' => 'required',
-            'email' => 'required'
-        ]);
-
-        $user = User::where('email', $request->input('email'))->first();
-        if (!$user) {
-            return response()->json(['status' => 'failed', 'message' => 'You Enter A Wrong Email'], 401);
-        }
-
-        if ($user->status == 'active') {
-            if (Hash::check($request->input('password'), $user->password)) {
-                $apikey = base64_encode(str_random(40));
-                User::where('email', $request->input('email'))
-                    ->update([
-                        'apikey' => $apikey,
-                        'last_login' => date('Y-m-d H:i:s')
-                    ]);
-
-                return response()->json(['status' => 'success', 'apikey' => $apikey, 'last login' => $user->last_login]);
-
-            } else {
-                return response()->json(['status' => 'failed', 'message' => 'You Enter Wrong password'], 401);
-            }
-        } else {
-            return response()->json(['status' => 'failed', 'message' => 'Student is not actived yet'], 401);
-        }
-    }
+//    public function authenticate(Request $request)
+//    {
+//        $this->validate($request, [
+//            'password' => 'required',
+//            'email' => 'required'
+//        ]);
+//
+//        $user = User::where('email', $request->input('email'))->first();
+//        if (!$user) {
+//            return response()->json(['status' => 'failed', 'message' => 'You Enter A Wrong Email'], 401);
+//        }
+//
+//        if ($user->status == 'active') {
+//            if (Hash::check($request->input('password'), $user->password)) {
+//                $apikey = base64_encode(str_random(40));
+//                User::where('email', $request->input('email'))
+//                    ->update([
+//                        'apikey' => $apikey,
+//                        'last_login' => date('Y-m-d H:i:s')
+//                    ]);
+//
+//                return response()->json(['status' => 'success', 'apikey' => $apikey, 'last login' => $user->last_login]);
+//
+//            } else {
+//                return response()->json(['status' => 'failed', 'message' => 'You Enter Wrong password'], 401);
+//            }
+//        } else {
+//            return response()->json(['status' => 'failed', 'message' => 'Student is not actived yet'], 401);
+//        }
+//    }
 
     public function register(Request $request)
     {
@@ -162,7 +162,7 @@ class UserController extends Controller
                 $return = ['status' => 200, 'message' => 'password fails'];
             }
         } else {
-            $return = ['status' => 201, 'message' => ' Wrong Old password', '$oldPassword' => $oldPassword, '$oldPasswordInput' => $oldPasswordInput];
+            $return = ['status' => 201, 'message' => ' Wrong Old password'];
         }
         return response()->json($return);
     }

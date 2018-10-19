@@ -8,8 +8,9 @@ use Laravel\Lumen\Auth\Authorizable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Contracts\Auth\Authenticatable as AuthenticatableContract;
 use Illuminate\Contracts\Auth\Access\Authorizable as AuthorizableContract;
+use Tymon\JWTAuth\Contracts\JWTSubject;
 
-class User extends Model implements AuthenticatableContract, AuthorizableContract
+class User extends Model implements JWTSubject, AuthenticatableContract, AuthorizableContract
 {
     use Authenticatable, Authorizable, CanResetPassword;
 
@@ -19,7 +20,7 @@ class User extends Model implements AuthenticatableContract, AuthorizableContrac
      * @var array
      */
     protected $fillable = [
-        'name', 'email','password','userimage'
+        'name', 'email', 'password', 'userimage'
     ];
 
     /**
@@ -31,19 +32,13 @@ class User extends Model implements AuthenticatableContract, AuthorizableContrac
         'password',
     ];
 
-    /**
-     * Get the user's first name.
-     *
-     * @param  string  $value
-     * @return string
-     */
-    public function getUserimageAttribute($value)
+    public function getJWTIdentifier()
     {
-        return url($value);
+        return $this->getKey();
     }
 
-    public function todo()
+    public function getJWTCustomClaims()
     {
-      return $this->hasMany('App\Todo','user_id');
+        return [];
     }
 }
