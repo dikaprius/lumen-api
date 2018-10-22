@@ -15,7 +15,6 @@ $router->get('/', function () use ($router) {
     return $router->app->version();
 });
 
-$router->post('/auth/login', 'AuthController@postLogin');
 
 $router->group(['prefix'=> 'api/v1'], function() use($router){
   $router->get('/products', 'ProductController@index');
@@ -25,7 +24,8 @@ $router->group(['prefix'=> 'api/v1'], function() use($router){
   $router->post('/product/delete', 'ProductController@destroy');
 });
 $router->get('/api/login', 'UserController@login');
-$router->post('/api/login', 'UserController@authenticate');
+$router->post('/auth/login', 'AuthController@postLogin');
+//$router->post('/api/login', 'UserController@authenticate');
 $router->post('/api/register', 'UserController@register');
 
 $router->group(['prefix' => 'api', 'middleware' =>'jwt.auth'], function() use($router){
