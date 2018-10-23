@@ -42,4 +42,19 @@ class User extends Model implements JWTSubject, AuthenticatableContract, Authori
     {
         return [];
     }
+
+    public function getUserimageAttribute($value)
+    {
+        return url($value);
+    }
+
+    public function profiles()
+    {
+        return $this->hasOne(Profile::class);
+    }
+
+    public function tokenStudent()
+    {
+        return $this->hasOne(TokenStudent::class);
+    }
 }

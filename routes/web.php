@@ -43,5 +43,13 @@ $router->group(['prefix' => 'profile', 'middleware' =>'jwt.auth'], function() us
     $router->get('/me', 'UserController@myProfile');
     $router->post('/changePassword','UserController@updatePassword');
     $router->post('/changeImage', 'UserController@changeImage');
-    $router->post('/requestToken', 'UserController@requestToken');
+    $router->post('/edit', 'ProfileController@create');
+    $router->post('/register-student', 'UserController@registerStudent');
+});
+
+$router->group(['prefix' => 'token', 'middleware' =>'jwt.auth'], function() use($router) {
+    $router->post('/requestToken', 'TokenController@requestToken');
+    $router->get('/requested', 'TokenController@getRequestedToken');
+    $router->post('/approveToken','TokenController@approveToken');
+
 });

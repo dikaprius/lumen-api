@@ -8,17 +8,18 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Contracts\Auth\Authenticatable as AuthenticatableContract;
 use Illuminate\Contracts\Auth\Access\Authorizable as AuthorizableContract;
 
-
-class Notification extends Model implements AuthenticatableContract, AuthorizableContract
+class TokenStudent extends Model implements AuthenticatableContract, AuthorizableContract
 {
     use Authenticatable, Authorizable;
 
+    public $table = 'user_tokens';
+
     protected $fillable = [
-        'id',
+        'token',
     ];
 
-    public function notifiable()
+    public function users()
     {
-        return $this->morphTo();
+        return $this->belongsTo(User::class);
     }
 }
