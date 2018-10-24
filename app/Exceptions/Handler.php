@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Laravel\Lumen\Exceptions\Handler as ExceptionHandler;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
+use Tymon\JWTAuth\JWTAuth;
 
 class Handler extends ExceptionHandler
 {
@@ -52,6 +53,11 @@ class Handler extends ExceptionHandler
                 $return = ['status' => 400, 'message' => 'Page Not Found'];
                 return response()->json($return);
             }
+
+            if ($exception instanceof \Tymon\JWTAuth\Exceptions\TokenExpiredException) {
+                return response()->json(['success' => 0, 'error' => 'token_expired'], $exception->getStatusCode());
+            }
+
         }
         return parent::render($request, $exception);
     }

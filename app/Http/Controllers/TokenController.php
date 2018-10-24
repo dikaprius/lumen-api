@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Notification\RequestTokenNotification;
+use App\Notification\RequestTokenPartnerNotification;
 use App\Profile;
 use App\Token;
 use App\TokenStudent;
@@ -39,6 +41,10 @@ class TokenController extends Controller
             $token->approve_id = $user->profiles->partner_id;
             if ($token->save()) {
                 $return = ['status' => 200, 'message' => 'request successfully', 'data' => $token];
+                $user->notify(new RequestTokenNotification());
+               $partnerId= $user->profiles->partner_id;
+               $partner = User::where('id', $partnerId)->first();
+               $partner->notify(new RequestTokenPartnerNotification());
             }
         }
         return response()->json($return);
@@ -52,7 +58,7 @@ class TokenController extends Controller
 
 
         if ($partner) {
-            $token = Token::where('approve_id', $user->id)->get();
+            $token = Token::where('approve_id', $user->id)->where('status', 'requested')->get();
             $return = ['status' => 200, 'message' => 'The Token has requested', 'data' => $token];
         }
         return response()->json($return);
