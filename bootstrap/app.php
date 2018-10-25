@@ -88,6 +88,7 @@ $app->routeMiddleware([
 |
 */
 
+
 $app->register(App\Providers\AppServiceProvider::class);
 $app->register(App\Providers\AuthServiceProvider::class);
 $app->register(App\Providers\EventServiceProvider::class);
@@ -97,7 +98,7 @@ $app->register(\Illuminate\Notifications\NotificationServiceProvider::class);
 $app->configure('filesystems');
 $app->configure('mail');
 $app->alias('mailer', \Illuminate\Contracts\Mail\Mailer::class);
-
+$app->register(App\Providers\CatchAllOptionsRequestsProvider::class);
 
 
 /*

@@ -56,7 +56,6 @@ class TokenController extends Controller
         $user = Auth::user();
         $partner = $user->role_id == 0;
 
-
         if ($partner) {
             $token = Token::where('approve_id', $user->id)->where('status', 'requested')->get();
             $return = ['status' => 200, 'message' => 'The Token has requested', 'data' => $token];
