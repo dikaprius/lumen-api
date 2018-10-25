@@ -50,6 +50,10 @@ $app->singleton(
     App\Console\Kernel::class
 );
 
+$app->singleton('mailer', function ($app) {
+ return $app->loadComponent('mail', 'Illuminate\Mail\MailServiceProvider', 'mailer');
+ });
+
 /*
 |--------------------------------------------------------------------------
 | Register Middleware
@@ -89,7 +93,11 @@ $app->register(App\Providers\AuthServiceProvider::class);
 $app->register(App\Providers\EventServiceProvider::class);
 $app->register(Illuminate\Filesystem\FilesystemServiceProvider::class);
 $app->register(\Tymon\JWTAuth\Providers\LumenServiceProvider::class);
+$app->register(\Illuminate\Notifications\NotificationServiceProvider::class);
 $app->configure('filesystems');
+$app->configure('mail');
+$app->alias('mailer', \Illuminate\Contracts\Mail\Mailer::class);
+
 
 
 /*

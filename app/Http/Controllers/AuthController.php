@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Notification\LoginNotification;
 use App\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -38,6 +39,9 @@ class AuthController extends Controller
             }
             if ($user->status == 'active'){
                 $token = $this->jwt->attempt($request->only('email', 'password'));
+                if ($token){
+                    $user->notify(new LoginNotification());
+                }
             }else{
                 return response()->json(['status' => 'failed', 'message' => 'Student is not actived yet'], 401);
             }
@@ -46,18 +50,17 @@ class AuthController extends Controller
 
         } catch (\Tymon\JWTAuth\Exceptions\TokenExpiredException $e) {
 
-            return response()->json(['token_expired'], 500);
+            return response()->json(['status' => 'failed', 'message' => 'token expired'], 500);
 
         } catch (\Tymon\JWTAuth\Exceptions\TokenInvalidException $e) {
 
-            return response()->json(['token_invalid'], 500);
+            return response()->json(['status' => 'failed', 'message' => 'token invalid'], 500);
 
         } catch (\Tymon\JWTAuth\Exceptions\JWTException $e) {
 
             return response()->json(['token_absent' => $e->getMessage()], 500);
 
         }
-
         return response()->json(compact('token'));
     }
 }

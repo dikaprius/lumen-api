@@ -15,7 +15,6 @@ $router->get('/', function () use ($router) {
     return $router->app->version();
 });
 
-$router->post('/auth/login', 'AuthController@postLogin');
 
 $router->group(['prefix'=> 'api/v1'], function() use($router){
   $router->get('/products', 'ProductController@index');
@@ -25,7 +24,8 @@ $router->group(['prefix'=> 'api/v1'], function() use($router){
   $router->post('/product/delete', 'ProductController@destroy');
 });
 $router->get('/api/login', 'UserController@login');
-$router->post('/api/login', 'UserController@authenticate');
+$router->post('/auth/login', 'AuthController@postLogin');
+//$router->post('/api/login', 'UserController@authenticate');
 $router->post('/api/register', 'UserController@register');
 
 $router->group(['prefix' => 'api', 'middleware' =>'jwt.auth'], function() use($router){
@@ -43,5 +43,13 @@ $router->group(['prefix' => 'profile', 'middleware' =>'jwt.auth'], function() us
     $router->get('/me', 'UserController@myProfile');
     $router->post('/changePassword','UserController@updatePassword');
     $router->post('/changeImage', 'UserController@changeImage');
-    $router->post('/requestToken', 'UserController@requestToken');
+    $router->post('/edit', 'ProfileController@create');
+    $router->post('/register-student', 'UserController@registerStudent');
+});
+
+$router->group(['prefix' => 'token', 'middleware' =>'jwt.auth'], function() use($router) {
+    $router->post('/requestToken', 'TokenController@requestToken');
+    $router->get('/requested', 'TokenController@getRequestedToken');
+    $router->post('/approveToken','TokenController@approveToken');
+
 });
