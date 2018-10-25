@@ -76,28 +76,31 @@ class TokenController extends Controller
             $token = Token::find($id);
 
             if (!$token) {
-                $return = ['status' => 200, 'message' => 'failed', 'data' => []];
+                $return = ['status' => 200, 'message' => 'no data', 'data' => []];
                 return response()->json($return);
             }
+            if ($token->status == 'requested') {
+                $token->status = $action;
+                if ($token->save()) {
+                    if ($action == 'accept') {
+                        $amountRequest = $token->token;
+                        $user_idRequest = $token->user_id;
+                        $add = TokenStudent::select('token')->where('user_id', $user_idRequest)->first();
+                        $final = $amountRequest + $add->token;
+                        var_dump($final);
+                        $update = TokenStudent::where('user_id', $user_idRequest);
+                        $update->update([
+                            'token' => $final
+                        ]);
 
-            $token->status = $action;
+                        $return = ['status' => 200, 'message' => 'success', 'Amount Token Request' => $amountRequest, 'token' => $update->get()];
 
-            if ($token->save()) {
-                if ($action == 'accept' && $token->status == 'requested') {
-                    $amountRequest = $token->token;
-                    $user_idRequest = $token->user_id;
-                    $add = TokenStudent::select('token')->where('user_id', $user_idRequest)->first();
-                    $final = $amountRequest + $add->token;
-                    $update = TokenStudent::where('user_id', $user_idRequest);
-                    $update->update([
-                        'token' => $final
-                    ]);
-
-                    $return = ['status' => 200, 'message' => 'success', 'Amount Token Request' => $amountRequest, 'token' => $update->get()];
-
-                } else {
-                    $return = ['status' => 200, 'message' => 'failed'];
+                    } else {
+                        $return = ['status' => 200, 'message' => 'failed', 'data' => $token];
+                    }
                 }
+            }else{
+                $return = ['status' => 200, 'message' => 'data has accepted', 'data' => $token];
             }
         }
         return response()->json($return);
