@@ -103,5 +103,6 @@ class TokenController extends Controller
             }
         }
         return response()->json($return);
+        
     }
 }
