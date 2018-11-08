@@ -51,5 +51,9 @@ $router->group(['prefix' => 'token', 'middleware' =>'jwt.auth'], function() use(
     $router->post('/requestToken', 'TokenController@requestToken');
     $router->get('/requested', 'TokenController@getRequestedToken');
     $router->post('/approveToken','TokenController@approveToken');
+});
 
+$router->group(['prefix' => 'schedule', 'middleware' =>'jwt.auth'], function() use($router) {
+    $router->get('/', 'ScheduleController@getSchedule');
+    $router->post('/', 'ScheduleController@setSchedule');
 });
