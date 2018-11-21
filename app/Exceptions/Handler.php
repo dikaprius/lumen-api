@@ -50,7 +50,7 @@ class Handler extends ExceptionHandler
         if ('APP_ENV' != 'local') {
 
             if ($exception instanceof NotFoundHttpException) {
-                $return = ['status' => 400, 'message' => 'Page Not Found'];
+                $return = ['status' => 404, 'message' => __('errors.not_found')];
                 return response()->json($return);
             }
 

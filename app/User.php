@@ -15,6 +15,12 @@ class User extends Model implements JWTSubject, AuthenticatableContract, Authori
 {
     use Authenticatable, Authorizable, CanResetPassword, Notifiable;
 
+    const USER_PARTNER = 0;
+    const USER_STUDENT = 1;
+    const USER_COACH   = 2;
+
+    const STATUS_ACTIVE = 'active';
+    const STATUS_INACTIVE = 'inactive';
     /**
      * The attributes that are mass assignable.
      *
@@ -56,5 +62,27 @@ class User extends Model implements JWTSubject, AuthenticatableContract, Authori
     public function tokenStudent()
     {
         return $this->hasOne(TokenStudent::class);
+    }
+
+    public function isPartner(){
+        return $this->role_id == self::USER_PARTNER;
+    }
+
+    public function isStudent(){
+        return $this->role_id == self::USER_STUDENT;
+    }
+
+    public function isCoach(){
+        return $this->role_id == self::USER_COACH;
+    }
+
+    public function scopeActive($query)
+    {
+        return $query->where('status', self::STATUS_ACTIVE);
+    }
+
+    public function scopePartner($query)
+    {
+        return $query->where('role_id', self::USER_PARTNER);
     }
 }

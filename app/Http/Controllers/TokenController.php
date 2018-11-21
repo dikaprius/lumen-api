@@ -13,10 +13,9 @@ use Illuminate\Support\Facades\Auth;
 
 class TokenController extends Controller
 {
+
     /**
      * Create a new controller instance.
-     *
-     * @return void
      */
     public function __construct()
     {
@@ -25,83 +24,82 @@ class TokenController extends Controller
 
     public function requestToken(Request $request)
     {
-        $return = ["you're not a student"];
         $this->validate($request, [
-            'token' => 'required | integer'
+            'token' => 'required|integer'
         ]);
 
-        $student = Auth::user()->role_id == 1;
         $user = Auth::user();
 
-        if ($student) {
-            $token = new Token();
-            $token->status = 'requested';
-            $token->token = $request->input('token');
-            $token->user_id = Auth::user()->id;
-            $token->approve_id = $user->profiles->partner_id;
-            if ($token->save()) {
-                $return = ['status' => 200, 'message' => 'request successfully', 'data' => $token];
-                $user->notify(new RequestTokenNotification());
-               $partnerId= $user->profiles->partner_id;
-               $partner = User::where('id', $partnerId)->first();
-               $partner->notify(new RequestTokenPartnerNotification());
-            }
+        if (!$user->isStudent){
+            return response()->json(["you're not a student"]);
         }
-        return response()->json($return);
+
+        $token = new Token();
+
+        $token->status = 'requested';
+        $token->token = $request->input('token');
+        $token->user_id = $user->id;
+        $token->approve_id = $user->profiles->partner_id;
+
+        $token->save();
+
+        $user->notify(new RequestTokenNotification());
+
+        $partner = User::where('id', $user->profiles->partner_id)->first();
+        $partner->notify(new RequestTokenPartnerNotification());
+
+        return response()->json(['status' => 200, 'message' => 'request successfully', 'data' => $token]);
     }
 
     public function getRequestedToken()
     {
-        $return = ['message' => "No you can't !!! you're a student"];
         $user = Auth::user();
-        $partner = $user->role_id == 0;
 
-        if ($partner) {
-            $token = Token::where('approve_id', $user->id)->where('status', 'requested')->get();
-            $return = ['status' => 200, 'message' => 'The Token has requested', 'data' => $token];
+        // Check if authenticated user is a partner
+        if (!$user->isPartner()) {
+            return response()->json(['message' => "No you can't !!! you're not a partner"]);
         }
-        return response()->json($return);
+
+        $token = Token::where('approve_id', $user->id)->where('status', 'requested')->get();
+
+        return response()->json(['status' => 200, 'message' => 'The Token has requested', 'data' => $token]);
     }
 
     public function approveToken(Request $request)
     {
-        $return = ['message' => "No you can't !!! you're a student"];
         $user = Auth::user();
-        $partner = $user->role_id == 0;
 
-        if ($partner) {
-            $id = $request->id;
-            $action = $request->input('action');
-            $token = Token::find($id);
-
-            if (!$token) {
-                $return = ['status' => 200, 'message' => 'no data', 'data' => []];
-                return response()->json($return);
-            }
-            if ($token->status == 'requested') {
-                $token->status = $action;
-                if ($token->save()) {
-                    if ($action == 'accept') {
-                        $amountRequest = $token->token;
-                        $user_idRequest = $token->user_id;
-                        $add = TokenStudent::select('token')->where('user_id', $user_idRequest)->first();
-                        $final = $amountRequest + $add->token;
-                        var_dump($final);
-                        $update = TokenStudent::where('user_id', $user_idRequest);
-                        $update->update([
-                            'token' => $final
-                        ]);
-
-                        $return = ['status' => 200, 'message' => 'success', 'Amount Token Request' => $amountRequest, 'token' => $update->get()];
-
-                    } else {
-                        $return = ['status' => 200, 'message' => 'failed', 'data' => $token];
-                    }
-                }
-            }else{
-                $return = ['status' => 200, 'message' => 'data has accepted', 'data' => $token];
-            }
+        // Check if authenticated user is a partner
+        if (!$user->isPartner()) {
+            return response()->json(['message' => "No you can't !!! you're not a partner"]);
         }
-        return response()->json($return);
+
+        // Retrieve token from database
+        $token = Token::find($request->input('id'));
+
+        // Token not exist
+        if (!$token) {
+            return response()->json(['status' => 200, 'message' => 'no data', 'data' => []]);
+        }
+
+        // Token status is not requested, partner allow to accept or decline
+        if ($token->status != 'requested') {
+            return response()->json(['status' => 200, 'message' => 'data is not a request', 'data' => $token]);
+        }
+
+        $token->status = $request->input('action');
+        $token->save();
+
+        // Token new is accepted
+        if ($request->input('action') == 'accept') {
+            $tokenStudent = TokenStudent::where('user_id', $token->user_id)->first();
+            $tokenStudent->token = $tokenStudent->token + $token->token;
+            $tokenStudent->save();
+
+            return response()->json(['status' => 200, 'message' => 'success', 'Amount Token Request' => $token->token, 'token' => $tokenStudent]);
+        }
+
+        // Token is not accepted
+        return response()->json(['status' => 200, 'message' => 'failed', 'data' => $token]);
     }
 }

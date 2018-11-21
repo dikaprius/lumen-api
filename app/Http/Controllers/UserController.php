@@ -19,9 +19,11 @@ class UserController extends Controller
 {
     /**
      * Create a new controller instance.
-     *
-     * @return void
      */
+    public function __construct()
+    {
+        // $this->middleware('auth');
+    }
 
 //    public function authenticate(Request $request)
 //    {
@@ -93,14 +95,12 @@ class UserController extends Controller
         return response()->json($return);
     }
 
-    public function __construct()
-    {
-        // $this->middleware('auth');
-    }
-
     public function registerStudent(Request $request)
     {
-        $return = [];
+        // Check if authenticated user is a partner
+        if (!(Auth::user())->isPartner()) {
+            return response()->json(['message' => "No you can't !!! you're not a partner"]);
+        }
 
         $this->validate($request, [
             'name' => 'required',
@@ -108,63 +108,61 @@ class UserController extends Controller
             'password' => 'required',
             'userimage' => 'file|max:2000'
         ]);
+
+        // Storing image
+        $path = null;
         if ($request->hasFile('userimage')) {
             $image = $request->file('userimage');
             $path = Storage::putFile('avatar', $image);
 
 //            run this command to create a symlink in lumen
 //            ln -s /Users/dyned/lumen_api/storage/app/avatar /Users/dyned/lumen_api/public/avatar
+//           ln -s /Users/dyned/Project/live-api/storage/app/avatar /Users/dyned/Project/live-api/public/avatar
+
         }
 
-        $partner = Auth::user()->role_id == 0;
-        $password = Hash::make($request->input('password'));
-        $partnerId = Auth::user()->id;
+        // Store student
+        $user = new User;
+        $user->name = $request->input('name');
+        $user->email = $request->input('email');
+        $user->password = Hash::make($request->input('password'));
+//      $user->password = bcrypt($request->input('password'));
+        $user->sso_username = NULL;
+        $user->sso_enabled = NULL;
+        $user->userimage = $path;
+        $user->role_id = 1;
+        $user->last_login = date('Y-m-d H:i:s'); //now()
+        $user->status = 'active';
+        $user->save();
 
-        if ($partner) {
-            $user = new User;
-            $user->name = $request->get('name');
-            $user->email = $request->get('email');
-            $user->password = $password;
-            $user->sso_username = NULL;
-            $user->sso_enabled = NULL;
-            if ($request->hasFile('userimage')) {
-                $user->userimage = $path;
-            }
-            $user->role_id = 1;
-            $user->last_login = date('Y-m-d H:i:s');
-            $user->status = 'active';
-            if ($user->save()) {
-                $userProfile = new Profile();
-                $userProfile->partner_id = $partnerId;
-                $userProfile->user_id = $user->id;
-                if ($userProfile->save()) {
-                    $token = new TokenStudent();
-                    $token->user_id = $user->id;
-                    $token->partner_id = $partnerId;
-                    $token->token = $request->input('token');
-                    if ($token->save()) {
-                        $return = ['message' => 'Register Successfully', 'status' => 200, 'data' => $user, 'token'=>$token['token']];
-                    }
-                }
-            }
-        }
+        // Store student profile
+        $userProfile = new Profile();
+        $userProfile->partner_id = Auth::id();
+        $userProfile->user_id = $user->id;
+        $userProfile->save();
 
-        return response()->json($return);
+        // Store student token
+        $token = new TokenStudent();
+        $token->user_id = $user->id;
+        $token->partner_id = Auth::id();
+        $token->token = $request->input('token');
+        $token->save();
+
+        return response()->json(['message' => 'Register Successfully', 'status' => 200, 'data' => $user, 'token' => $token->token]);
     }
 
-
-    public function profileByEmail($email)
+    public function profileByEmail($emailOrId)
     {
-
         $return = ['status' => 401, 'message' => 'You Have No Access'];
         $validateRole = Auth::user()->role_id == 0;
 
         if ($validateRole) {
-            $user = User::where('email', $email)
-                ->where('status', 'active')
-                ->orWhere('id', $email)
-                ->where('status', 'active')
-                ->get();
+            $user = User::active()->where(function($query) use ($emailOrId){
+                $query->where('email', $emailOrId)
+                    ->orWhere('id', $emailOrId);
+            })->get();
+
+            // if(!$user->count())
             if (sizeof($user) == 0) {
                 $message = "There's no Student with this record";
             } else {
@@ -197,8 +195,7 @@ class UserController extends Controller
     {
         $user = Auth::user();
 
-        $return = ['status' => 200, 'message' => 'success', 'data' => $user];
-        return response()->json($return);
+        return response()->json(['status' => 200, 'message' => 'success', 'data' => $user]);
     }
 
     public function updatePassword(Request $request)
