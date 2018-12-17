@@ -200,11 +200,15 @@ class UserController extends Controller
 
     public function updatePassword(Request $request)
     {
-        $this->validate($request, [
+        $validate = $this->validate($request, [
             'old_password' => 'required',
             'password' => 'required | confirmed',
             'password_confirmation' => 'required'
         ]);
+
+        if (!$validate){
+            return response()->json($validate);
+        }
         $return = [];
         $user = User::find(Auth::id());
         $oldPassword = Auth::user()->password;
@@ -245,5 +249,6 @@ class UserController extends Controller
         }
         return response()->json($return);
     }
+
 
 }

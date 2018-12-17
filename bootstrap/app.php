@@ -31,11 +31,11 @@ $app->withEloquent();
 
 /*
 |--------------------------------------------------------------------------
-| Register Container Bindings
+| register container bindings
 |--------------------------------------------------------------------------
 |
-| Now we will register a few bindings in the service container. We will
-| register the exception handler and the console kernel. You may add
+| now we will register a few bindings in the service container. we will
+| register the exception handler and the console kernel. you may add
 | your own bindings here if you like or you can make another file.
 |
 */
@@ -65,9 +65,9 @@ $app->singleton('mailer', function ($app) {
 |
 */
 
-$app->middleware([
-   App\Http\Middleware\ExampleMiddleware::class
-]);
+//$app->middleware([
+//   App\Http\Middleware\ExampleMiddleware::class
+//]);
 
 $app->middleware([
     App\Http\Middleware\CorsMiddleware::class
